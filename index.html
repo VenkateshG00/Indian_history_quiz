@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Indian History Quiz</title>
+<style>
+:root{
+  --bg:#faf9f5; --card:#ffffff; --text:#1a1a18; --muted:#5f5e5a;
+  --border:#e4e2da; --accent:#378add; --ok-bg:#eaf3de; --ok-tx:#3b6d11; --ok-bd:#97c459;
+  --no-bg:#fceaeb; --no-tx:#a32d2d; --no-bd:#f09595; --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1c1c1a; --card:#262624; --text:#f5f4ef; --muted:#a3a29c;
+    --border:#3a3a37; --accent:#85b7eb; --ok-bg:#27500a; --ok-tx:#c0dd97; --ok-bd:#639922;
+    --no-bg:#501313; --no-tx:#f7c1c1; --no-bd:#a32d2d;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;padding:2rem 1rem;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.7;-webkit-font-smoothing:antialiased}
+#app{max-width:680px;margin:0 auto}
+h1{font-size:22px;font-weight:500;margin:0 0 8px}
+p{margin:0}
+button{font:inherit;font-size:15px;background:transparent;color:var(--text);
+  border:1px solid var(--border);border-radius:var(--radius);padding:10px 16px;
+  cursor:pointer;transition:background .15s}
+button:hover:not(:disabled){background:var(--bg)}
+button:active:not(:disabled){transform:scale(.98)}
+button:disabled{cursor:default}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.bar{height:4px;background:var(--border);border-radius:2px;margin-bottom:20px}
+.bar>div{height:4px;background:var(--accent);border-radius:2px;transition:width .3s}
+.meta{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:8px}
+.qt{font-size:18px;font-weight:500;margin:0 0 16px;line-height:1.5}
+#opts{display:grid;gap:8px}
+#opts button{text-align:left;padding:12px 14px}
+.fb{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px 14px;margin-bottom:12px;font-size:14px;color:var(--muted)}
+.rev{border-bottom:1px solid var(--border);padding:10px 0;font-size:14px}
+.rev .sub{margin-left:22px;font-size:13px;color:var(--muted)}
+.mark{display:inline-block;width:16px;margin-right:6px;font-weight:500}
+</style>
+</head>
+<body>
+<div id="app">
+  <h2 class="sr">Interactive quiz on Indian history with scoring and answer review.</h2>
+  <div id="start">
+    <div class="card">
+      <h1>Indian history quiz</h1>
+      <p style="font-size:15px;color:var(--muted);margin-bottom:20px">10 questions spanning the Indus Valley to independence. Pick a difficulty and see how you score.</p>
+      <div class="row">
+        <button onclick="begin('easy')">Easy</button>
+        <button onclick="begin('mixed')">Mixed</button>
+        <button onclick="begin('hard')">Hard</button>
+      </div>
+    </div>
+  </div>
+  <div id="quiz" style="display:none"></div>
+  <div id="result" style="display:none"></div>
+</div>
+<script>
+const BANK=[
+{q:"Which river valley hosted the Harappan civilisation's largest known site, Mohenjo-daro?",o:["Ganga","Indus","Narmada","Godavari"],a:1,d:"easy",e:"Mohenjo-daro sits on the Indus in present-day Sindh, Pakistan."},
+{q:"Who founded the Maurya empire?",o:["Ashoka","Bindusara","Chandragupta Maurya","Samudragupta"],a:2,d:"easy",e:"Chandragupta Maurya took Magadha around 322 BCE with Chanakya's guidance."},
+{q:"After which war did Ashoka turn toward Buddhism?",o:["Kalinga","Panipat","Talikota","Haldighati"],a:0,d:"easy",e:"The Kalinga war of roughly 261 BCE and its carnage prompted his change of course."},
+{q:"The Gupta period is often called India's classical age largely because of advances in",o:["Naval warfare","Mathematics and astronomy","Gunpowder","Steam power"],a:1,d:"mixed",e:"Aryabhata's work on zero, decimals and planetary motion belongs to this era."},
+{q:"Which dynasty built the Brihadeeswarar temple at Thanjavur?",o:["Chalukya","Pallava","Chola","Hoysala"],a:2,d:"hard",e:"Rajaraja Chola I completed it around 1010 CE."},
+{q:"The first battle of Panipat in 1526 established which empire in India?",o:["Mughal","Maratha","Sultanate of Delhi","Vijayanagara"],a:0,d:"mixed",e:"Babur defeated Ibrahim Lodi, ending Lodi rule and starting the Mughals."},
+{q:"Akbar's abolition of the jizya tax reflected his approach of",o:["Military expansion only","Religious accommodation","Isolation from Rajputs","Banning trade"],a:1,d:"mixed",e:"He also created the Ibadat Khana for interfaith debate."},
+{q:"Shivaji was crowned Chhatrapati in which year?",o:["1627","1674","1707","1761"],a:1,d:"hard",e:"The coronation at Raigad in 1674 formalised Maratha sovereignty."},
+{q:"The Battle of Plassey in 1757 gave the East India Company control over",o:["Punjab","Bengal","Mysore","Gujarat"],a:1,d:"mixed",e:"Robert Clive defeated Siraj-ud-Daulah, opening Bengal's revenues to the Company."},
+{q:"The Salt March of 1930 ended at which coastal village?",o:["Dandi","Chauri Chaura","Champaran","Bardoli"],a:0,d:"easy",e:"Gandhi walked about 240 miles from Sabarmati to Dandi to break the salt law."},
+{q:"Who delivered the 'Tryst with Destiny' speech in August 1947?",o:["Sardar Patel","Jawaharlal Nehru","Rajendra Prasad","B. R. Ambedkar"],a:1,d:"mixed",e:"Nehru spoke to the Constituent Assembly on the eve of independence."},
+{q:"Who chaired the drafting committee of the Indian Constitution?",o:["B. R. Ambedkar","C. Rajagopalachari","Maulana Azad","Rajendra Prasad"],a:0,d:"hard",e:"Ambedkar led the committee; the Constitution came into force on 26 January 1950."},
+{q:"The Vijayanagara empire's capital Hampi lies in which present-day state?",o:["Karnataka","Telangana","Maharashtra","Tamil Nadu"],a:0,d:"hard",e:"Hampi, on the Tungabhadra river, is a UNESCO World Heritage site."},
+{q:"The revolt of 1857 began with a mutiny at which cantonment?",o:["Kanpur","Meerut","Jhansi","Lucknow"],a:1,d:"mixed",e:"Sepoys at Meerut rose in May 1857 and marched on Delhi."},
+{q:"Which emperor's court hosted the Chinese pilgrim Xuanzang?",o:["Harsha","Kanishka","Akbar","Krishnadevaraya"],a:0,d:"hard",e:"Xuanzang visited Harshavardhana's kingdom in the 7th century CE."}
+];
+let Q=[],i=0,score=0,log=[];
+const $=id=>document.getElementById(id);
+function begin(mode){
+  const pool = mode==='mixed' ? BANK.slice() : BANK.filter(x=>x.d===mode||x.d==='mixed');
+  Q=pool.sort(()=>Math.random()-0.5).slice(0,10);
+  i=0;score=0;log=[];
+  $('start').style.display='none';
+  $('quiz').style.display='block';
+  render();
+}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function render(){
+  const c=Q[i], pct=Math.round(i/Q.length*100);
+  $('quiz').innerHTML =
+    '<div class="meta"><span>Question '+(i+1)+' of '+Q.length+'</span><span>Score '+score+'</span></div>'+
+    '<div class="bar"><div style="width:'+pct+'%"></div></div>'+
+    '<p class="qt">'+esc(c.q)+'</p>'+
+    '<div id="opts">'+c.o.map((o,n)=>'<button data-n="'+n+'">'+esc(o)+'</button>').join('')+'</div>'+
+    '<div id="fb" style="margin-top:16px"></div>';
+  document.querySelectorAll('#opts button').forEach(b=>b.addEventListener('click',()=>pick(+b.dataset.n)));
+}
+function pick(n){
+  const c=Q[i], ok = n===c.a;
+  if(ok) score++;
+  log.push({q:c.q, ok:ok, you:c.o[n], right:c.o[c.a]});
+  document.querySelectorAll('#opts button').forEach(b=>{
+    const k=+b.dataset.n; b.disabled=true;
+    if(k===c.a){b.style.background='var(--ok-bg)';b.style.color='var(--ok-tx)';b.style.borderColor='var(--ok-bd)';}
+    else if(k===n){b.style.background='var(--no-bg)';b.style.color='var(--no-tx)';b.style.borderColor='var(--no-bd)';}
+  });
+  $('fb').innerHTML =
+    '<div class="fb"><span style="color:'+(ok?'var(--ok-tx)':'var(--no-tx)')+';font-weight:500">'+(ok?'Correct. ':'Not quite. ')+'</span>'+esc(c.e)+'</div>'+
+    '<button id="nx">'+(i===Q.length-1?'See results':'Next question')+'</button>';
+  $('nx').addEventListener('click',next);
+}
+function next(){
+  i++;
+  if(i<Q.length){render();return;}
+  $('quiz').style.display='none';
+  const r=$('result'); r.style.display='block';
+  const pct=Math.round(score/Q.length*100);
+  const msg = pct>=80?'Strong grasp of the timeline.':pct>=50?'Solid, with a few gaps.':'Worth another pass through the basics.';
+  r.innerHTML =
+    '<div class="card" style="margin-bottom:1rem">'+
+      '<p style="font-size:13px;color:var(--muted)">Final score</p>'+
+      '<p style="font-size:32px;font-weight:500;line-height:1.2">'+score+' / '+Q.length+'</p>'+
+      '<p style="font-size:15px;color:var(--muted)">'+pct+'% &mdash; '+msg+'</p>'+
+    '</div>'+
+    '<p style="font-size:16px;font-weight:500;margin-bottom:10px">Review</p>'+
+    log.map(l=>'<div class="rev"><span class="mark" style="color:'+(l.ok?'var(--ok-tx)':'var(--no-tx)')+'">'+(l.ok?'&#10003;':'&#10007;')+'</span>'+esc(l.q)+
+      (l.ok?'':'<p class="sub">You chose '+esc(l.you)+' &middot; Answer: '+esc(l.right)+'</p>')+'</div>').join('')+
+    '<div class="row" style="margin-top:1rem"><button id="rt">Try again</button></div>';
+  $('rt').addEventListener('click',reset);
+}
+function reset(){$('result').style.display='none';$('start').style.display='block';}
+</script>
+</body>
+</html>
